@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoolScore Pro - Marcador de Billar</title>
+    <!-- Tailwind CSS para diseño rápido y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para una tipografía premium -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+        /* Estilos personalizados para simular paño de billar y detalles metálicos */
+        .billar-green {
+            background: radial-gradient(circle, #155e37 0%, #064e2b 100%);
+        }
+        .billar-dark {
+            background-color: #0f172a;
+        }
+        .billar-border {
+            border-color: #1e293b;
+        }
+        /* Ocultar scrollbars estéticamente */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden antialiased">
+
+    <!-- CABECERA DE LA APLICACIÓN -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 shadow-lg">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navegarALobby()">
+                <!-- Icono de bola de billar 8 SVG -->
+                <svg class="w-8 h-8 text-emerald-500" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10" fill="#111827"/>
+                    <circle cx="12" cy="12" r="8" fill="#10b981"/>
+                    <circle cx="12" cy="12" r="4.5" fill="#ffffff"/>
+                    <text x="12" y="14" font-size="6" font-weight="bold" fill="#000" text-anchor="middle" font-family="sans-serif">8</text>
+                </svg>
+                <span class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">PoolScore Pro</span>
+            </div>
+            
+            <!-- Navegación móvil/desktop -->
+            <nav class="flex space-x-2">
+                <button onclick="navegarALobby()" id="btn-nav-lobby" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Jugar
+                </button>
+                <button onclick="navegarAHistorial()" id="btn-nav-historial" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800">
+                    Historial
+                </button>
+                <button onclick="navegarAEstadisticas()" id="btn-nav-stats" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800">
+                    Estadísticas
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL MULTI-VISTA -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 md:py-8">
+        
+        <!-- VISTA 1: LOBBY / NUEVA PARTIDA -->
+        <section id="vista-lobby" class="space-y-6">
+            <div class="text-center md:text-left md:max-w-xl md:mx-auto lg:max-w-none lg:mx-0">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">¡Prepara tus tacos!</h1>
+                <p class="text-slate-400 mt-1">Configura los jugadores y comienza a registrar tus partidas de billar de forma profesional.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Tarjeta de configuración -->
+                <div class="lg:col-span-7 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-sm">
+                    <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                        <span class="w-2 h-6 bg-emerald-500 rounded-full mr-3"></span>
+                        Configuración de Partida
+                    </h2>
+
+                    <form id="form-nueva-partida" onsubmit="iniciarPartida(event)" class="space-y-6">
+                        <!-- Modalidad de juego -->
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-300 mb-2">Modalidad de Juego</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <label class="relative flex flex-col items-center justify-center p-3 rounded-xl border border-slate-700 bg-slate-800/40 hover:bg-slate-800/80 cursor-pointer transition-all">
+                                    <input type="radio" name="modalidad" value="Bola 8" checked class="absolute top-2 right-2 accent-emerald-500">
+                                    <span class="text-xl mb-1">🎱</span>
+                                    <span class="text-xs font-semibold text-white">Bola 8</span>
+                                </label>
+                                <label class="relative flex flex-col items-center justify-center p-3 rounded-xl border border-slate-700 bg-slate-800/40 hover:bg-slate-800/80 cursor-pointer transition-all">
+                                    <input type="radio" name="modalidad" value="Bola 9" class="absolute top-2 right-2 accent-emerald-500">
+                                    <span class="text-xl mb-1">🟡</span>
+                                    <span class="text-xs font-semibold text-white">Bola 9</span>
+                                </label>
+                                <label class="relative flex flex-col items-center justify-center p-3 rounded-xl border border-slate-700 bg-slate-800/40 hover:bg-slate-800/80 cursor-pointer transition-all">
+                                    <input type="radio" name="modalidad" value="Libre/Carambola" class="absolute top-2 right-2 accent-emerald-500">
+                                    <span class="text-xl mb-1">⚪</span>
+                                    <span class="text-xs font-semibold text-white">Carambola</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Jugador 1 -->
+                        <div class="space-y-2">
+                            <label for="j1-nombre" class="block text-sm font-semibold text-slate-300">Jugador 1 (Local)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                    👤
+                                </span>
+                                <input type="text" id="j1-nombre" required placeholder="Nombre o alias" 
+                                    class="w-full bg-slate-850 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Jugador 2 -->
+                        <div class="space-y-2">
+                            <label for="j2-nombre" class="block text-sm font-semibold text-slate-300">Jugador 2 (Visitante)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                    👤
+                                </span>
+                                <input type="text" id="j2-nombre" required placeholder="Nombre o alias" 
+                                    class="w-full bg-slate-850 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Límite de puntos (Opcional) -->
+                        <div class="space-y-2">
+                            <label for="puntos-limite" class="block text-sm font-semibold text-slate-300 flex justify-between">
+                                <span>Límite de Puntos</span>
+                                <span class="text-slate-500 text-xs font-normal">(Opcional - Dejar vacío para libre)</span>
+                            </label>
+                            <input type="number" id="puntos-limite" min="1" placeholder="Ej. 15, 30, 50" 
+                                class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all">
+                        </div>
+
+                        <!-- Botón Comenza -->
+                        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-4 px-6 rounded-xl shadow-lg shadow-emerald-500/20 transform active:scale-[0.98] transition-all flex items-center justify-center space-x-2 text-lg">
+                            <span>Empezar Partida</span>
+                            <span>⚡</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Resumen rápido/Consejo al lado en pantallas grandes -->
+                <div class="lg:col-span-5 flex flex-col justify-between space-y-6">
+                    <div class="bg-gradient-to-br from-emerald-900/30 to-slate-900 border border-emerald-500/20 rounded-2xl p-6 shadow-xl">
+                        <div class="text-emerald-400 text-2xl mb-3">💡</div>
+                        <h3 class="text-lg font-bold text-white mb-2">Consejos del Marcador</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Durante la partida podrás registrar entradas/turnos, controlar quién tiene el tiro en curso y guardar el historial de tacadas individuales. ¡Toda la información cuenta para las estadísticas!
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 flex-grow flex flex-col justify-center items-center text-center">
+                        <span class="text-4xl mb-3">🏆</span>
+                        <h3 class="text-lg font-bold text-white mb-1">Persistencia Total</h3>
+                        <p class="text-slate-400 text-xs max-w-xs leading-relaxed">
+                            Las partidas se guardan automáticamente de forma local en el navegador. No te preocupes por recargar o cerrar la ventana.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 2: MARCADOR DE PARTIDA EN JUEGO -->
+        <section id="vista-marcador" class="hidden space-y-6">
+            <!-- Barra superior con información de partida -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 px-4 py-3 rounded-2xl">
+                <div class="flex items-center space-x-3">
+                    <span id="marcador-modalidad" class="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-500/20">Modalidad</span>
+                    <span id="marcador-limite" class="text-slate-400 text-xs font-medium">Límite: -</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Cronómetro activo -->
+                    <div class="flex items-center space-x-1.5 text-slate-300 font-mono text-sm">
+                        <span class="animate-pulse text-red-500">⏱️</span>
+                        <span id="cronometro">00:00</span>
+                    </div>
+                    <!-- Botón abandonar / volver con aviso -->
+                    <button onclick="confirmarAbandono()" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-lg transition-colors">
+                        Salir sin guardar
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLERO PRINCIPAL DE MARCADOR -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                <!-- Tarjeta Jugador 1 (Izquierda / Local) -->
+                <div id="card-j1" class="relative bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-6 md:p-8 flex flex-col justify-between transition-all shadow-xl">
+                    <!-- Indicador de Turno Activo -->
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-slate-950 px-4 py-0.5 rounded-full text-xs font-bold tracking-widest uppercase transition-all" id="turno-j1">
+                        Turno Activo
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <span id="m-j1-avatar" class="inline-block text-3xl mb-1">👤</span>
+                        <h2 id="m-j1-nombre" class="text-2xl font-black text-white truncate px-2">Jugador 1</h2>
+                        <p class="text-slate-500 text-xs">Jugador Local</p>
+                    </div>
+
+                    <!-- Panel de puntuación gigante -->
+                    <div class="flex items-center justify-center space-x-6 my-6">
+                        <button onclick="modificarPuntos(1, -1)" class="w-14 h-14 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full flex items-center justify-center text-2xl text-white font-bold transition-transform active:scale-90">-</button>
+                        <div class="text-center min-w-[100px]">
+                            <span id="m-j1-puntos" class="text-7xl md:text-8xl font-black text-white tracking-tighter">0</span>
+                        </div>
+                        <button onclick="modificarPuntos(1, 1)" class="w-14 h-14 bg-emerald-500 hover:bg-emerald-400 border border-emerald-600 rounded-full flex items-center justify-center text-2xl text-slate-950 font-black transition-transform active:scale-95">+</button>
+                    </div>
+
+                    <!-- Estadísticas Rápidas en vivo -->
+                    <div class="grid grid-cols-2 gap-2 pt-4 border-t border-slate-800 text-center">
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Tacada Actual</p>
+                            <p id="m-j1-tacada" class="text-xl font-bold text-emerald-400">0</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Mejor Tacada</p>
+                            <p id="m-j1-max-tacada" class="text-xl font-bold text-white">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Botón para ceder turno / marcar tiro actual -->
+                    <div class="mt-6">
+                        <button onclick="cambiarTurno(2)" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 py-3 px-4 rounded-xl text-sm font-semibold transition-colors active:scale-[0.99]">
+                            Cedido Turno / Falló
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tarjeta Jugador 2 (Derecha / Visitante) -->
+                <div id="card-j2" class="relative bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 flex flex-col justify-between transition-all shadow-xl">
+                    <!-- Indicador de Turno Activo -->
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-slate-950 px-4 py-0.5 rounded-full text-xs font-bold tracking-widest uppercase transition-all hidden" id="turno-j2">
+                        Turno Activo
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <span id="m-j2-avatar" class="inline-block text-3xl mb-1">👥</span>
+                        <h2 id="m-j2-nombre" class="text-2xl font-black text-white truncate px-2">Jugador 2</h2>
+                        <p class="text-slate-500 text-xs">Jugador Visitante</p>
+                    </div>
+
+                    <!-- Panel de puntuación gigante -->
+                    <div class="flex items-center justify-center space-x-6 my-6">
+                        <button onclick="modificarPuntos(2, -1)" class="w-14 h-14 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full flex items-center justify-center text-2xl text-white font-bold transition-transform active:scale-90">-</button>
+                        <div class="text-center min-w-[100px]">
+                            <span id="m-j2-puntos" class="text-7xl md:text-8xl font-black text-white tracking-tighter">0</span>
+                        </div>
+                        <button onclick="modificarPuntos(2, 1)" class="w-14 h-14 bg-emerald-500 hover:bg-emerald-400 border border-emerald-600 rounded-full flex items-center justify-center text-2xl text-slate-950 font-black transition-transform active:scale-95">+</button>
+                    </div>
+
+                    <!-- Estadísticas Rápidas en vivo -->
+                    <div class="grid grid-cols-2 gap-2 pt-4 border-t border-slate-800 text-center">
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Tacada Actual</p>
+                            <p id="m-j2-tacada" class="text-xl font-bold text-emerald-400">0</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Mejor Tacada</p>
+                            <p id="m-j2-max-tacada" class="text-xl font-bold text-white">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Botón para ceder turno / marcar tiro actual -->
+                    <div class="mt-6">
+                        <button onclick="cambiarTurno(1)" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 py-3 px-4 rounded-xl text-sm font-semibold transition-colors active:scale-[0.99]">
+                            Cedido Turno / Falló
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLES GENERALES / HISTORIAL DE ENTRADAS -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Log o registro de jugadas en vivo -->
+                <div class="lg:col-span-7 bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-300 mb-3 flex items-center">
+                            <span class="w-1.5 h-4 bg-emerald-500 rounded-full mr-2"></span>
+                            Registro de Entradas (Turno <span id="num-entrada">1</span>)
+                        </h3>
+                        <div id="log-partida" class="space-y-2 max-h-[160px] overflow-y-auto pr-1 text-xs font-mono">
+                            <div class="text-slate-500 italic">¡La partida ha comenzado! Apunten con precisión.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Finalizador de Partida -->
+                <div class="lg:col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 border border-emerald-500/20 rounded-2xl p-4 flex flex-col justify-center space-y-3">
+                    <p class="text-xs text-slate-400 text-center">Una vez finalizado el juego, se calculará el ganador automático.</p>
+                    <button onclick="finalizarPartidaManual()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-emerald-500/10 flex items-center justify-center space-x-2">
+                        <span>🏆 Finalizar y Guardar Partida</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 3: HISTORIAL DE PARTIDAS -->
+        <section id="vista-historial" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-white">Historial de Partidas</h1>
+                    <p class="text-slate-400 text-sm">Consulta, edita y gestiona el histórico de tus enfrentamientos.</p>
+                </div>
+                
+                <!-- Buscador de partidas -->
+                <div class="relative w-full sm:w-72">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                        🔍
+                    </span>
+                    <input type="text" id="busqueda-jugador" oninput="filtrarPartidas()" placeholder="Buscar por jugador..." 
+                        class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                </div>
+            </div>
+
+            <!-- Listado de partidas guardadas -->
+            <div id="contenedor-historial" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Se rellena con JS -->
+                <div class="col-span-full py-12 text-center text-slate-500">
+                    <span class="text-4xl">📁</span>
+                    <p class="mt-2 text-sm">No hay partidas registradas todavía.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 4: ESTADÍSTICAS -->
+        <section id="vista-estadisticas" class="hidden space-y-6">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-white">Estadísticas de Jugadores</h1>
+                <p class="text-slate-400 text-sm">Rendimiento global histórico de todos tus competidores.</p>
+            </div>
+
+            <!-- Grid de KPIs rápidos -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+                    <span class="text-2xl">🔥</span>
+                    <p class="text-xs text-slate-400 mt-1 uppercase font-semibold">Total Partidas</p>
+                    <p id="stat-total-partidas" class="text-2xl font-black text-white mt-1">0</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+                    <span class="text-2xl">⚡</span>
+                    <p class="text-xs text-slate-400 mt-1 uppercase font-semibold">Total Jugadores</p>
+                    <p id="stat-total-jugadores" class="text-2xl font-black text-white mt-1">0</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+                    <span class="text-2xl">🎯</span>
+                    <p class="text-xs text-slate-400 mt-1 uppercase font-semibold">Récord Tacada</p>
+                    <p id="stat-record-tacada" class="text-2xl font-black text-emerald-400 mt-1">0</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+                    <span class="text-2xl">👑</span>
+                    <p class="text-xs text-slate-400 mt-1 uppercase font-semibold">Líder Victorias</p>
+                    <p id="stat-lider-victorias" class="text-sm font-bold text-white mt-2 truncate">Ninguno</p>
+                </div>
+            </div>
+
+            <!-- Tabla o lista de jugadores detallados -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-4 border-b border-slate-800">
+                    <h3 class="text-base font-bold text-white">Clasificación General</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950 text-slate-400 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-semibold">Jugador</th>
+                                <th class="p-4 font-semibold text-center">PJ</th>
+                                <th class="p-4 font-semibold text-center">PG</th>
+                                <th class="p-4 font-semibold text-center">PP</th>
+                                <th class="p-4 font-semibold text-center">% Victorias</th>
+                                <th class="p-4 font-semibold text-center">Máx Tacada</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-estadisticas" class="divide-y divide-slate-800 text-sm">
+                            <!-- Se rellena con JS -->
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-slate-500">No hay datos suficientes para mostrar estadísticas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-4 px-4 text-center text-xs text-slate-500">
+        <p>© 2026 PoolScore Pro. Diseñado para billaristas profesionales e informales.</p>
+    </footer>
+
+    <!-- MODALES / DIÁLOGOS EMERGENTES -->
+    
+    <!-- Modal 1: Detalles de Partida Finalizada/Histórica -->
+    <div id="modal-detalle-partida" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <!-- Cabecera del modal -->
+            <div class="bg-slate-950 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <span>🏆</span>
+                    <span>Resumen de Partida</span>
+                </h3>
+                <button onclick="cerrarModalDetalle()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+            </div>
+
+            <!-- Contenido del modal -->
+            <div class="p-6 space-y-6">
+                <!-- Meta info -->
+                <div class="flex justify-between text-xs text-slate-400">
+                    <div>
+                        <span class="font-bold">Modalidad:</span> <span id="md-modalidad">🎱 Bola 8</span>
+                    </div>
+                    <div>
+                        <span class="font-bold">Fecha:</span> <span id="md-fecha">29/06/2026 12:00</span>
+                    </div>
+                </div>
+
+                <!-- Enfrentamiento visual -->
+                <div class="bg-slate-950 p-4 rounded-2xl flex items-center justify-between border border-slate-850">
+                    <!-- Jugador 1 -->
+                    <div class="text-center flex-1 min-w-0">
+                        <span class="text-2xl">👤</span>
+                        <h4 id="md-j1-nombre" class="font-bold text-white truncate text-sm">Jugador 1</h4>
+                        <div id="md-j1-ganador" class="mt-1 text-[10px] font-bold text-emerald-400 hidden">¡GANADOR!</div>
+                    </div>
+                    <!-- Puntuación central -->
+                    <div class="flex items-center space-x-2 px-4">
+                        <span id="md-j1-puntos" class="text-3xl font-black text-white">0</span>
+                        <span class="text-slate-600 font-bold">-</span>
+                        <span id="md-j2-puntos" class="text-3xl font-black text-white">0</span>
+                    </div>
+                    <!-- Jugador 2 -->
+                    <div class="text-center flex-1 min-w-0">
+                        <span class="text-2xl">👥</span>
+                        <h4 id="md-j2-nombre" class="font-bold text-white truncate text-sm">Jugador 2</h4>
+                        <div id="md-j2-ganador" class="mt-1 text-[10px] font-bold text-emerald-400 hidden">¡GANADOR!</div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas complementarias -->
+                <div class="grid grid-cols-2 gap-4 text-center text-sm">
+                    <div class="bg-slate-850 p-3 rounded-xl border border-slate-800">
+                        <p class="text-xs text-slate-400 uppercase">Tiempo de Juego</p>
+                        <p id="md-duracion" class="font-bold text-white text-base mt-1">00:00</p>
+                    </div>
+                    <div class="bg-slate-850 p-3 rounded-xl border border-slate-800">
+                        <p class="text-xs text-slate-400 uppercase">Mejor Tacada</p>
+                        <p id="md-mejor-tacada" class="font-bold text-white text-base mt-1">0</p>
+                    </div>
+                </div>
+
+                <!-- Historial de entradas simplificado -->
+                <div>
+                    <h5 class="text-xs font-semibold text-slate-400 uppercase mb-2">Resumen de Entradas</h5>
+                    <div id="md-log-entradas" class="bg-slate-950 p-3 rounded-xl border border-slate-850 max-h-32 overflow-y-auto font-mono text-xs text-slate-300 space-y-1">
+                        <!-- Rellenado dinámico -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones finales -->
+            <div class="bg-slate-950 px-6 py-4 flex justify-end space-x-3 border-t border-slate-800">
+                <button onclick="cerrarModalDetalle()" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 px-5 rounded-xl text-sm transition-colors">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Confirmación de Abandono sin guardar -->
+    <div id="modal-confirmar-abandono" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl">
+            <div class="p-6 text-center space-y-4">
+                <span class="text-4xl">⚠️</span>
+                <h3 class="text-lg font-bold text-white">¿Salir sin guardar la partida?</h3>
+                <p class="text-slate-400 text-sm">La partida actual se descartará y todos los datos en progreso se perderán.</p>
+            </div>
+            <div class="bg-slate-950 px-6 py-4 flex justify-between space-x-3 border-t border-slate-800">
+                <button onclick="cerrarAbandono()" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-colors flex-1">
+                    Continuar Jugando
+                </button>
+                <button onclick="salirPartidaDefinitivamente()" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-colors flex-1">
+                    Sí, salir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Edición de Nombres / Modalidad -->
+    <div id="modal-editar-partida" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="bg-slate-950 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <span>✏️</span>
+                    <span>Editar Registro de Partida</span>
+                </h3>
+                <button onclick="cerrarModalEditar()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+            </div>
+
+            <form id="form-editar-partida" onsubmit="guardarEdicionPartida(event)" class="p-6 space-y-4">
+                <input type="hidden" id="edit-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Modalidad de Juego</label>
+                    <select id="edit-modalidad" class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        <option value="Bola 8">🎱 Bola 8</option>
+                        <option value="Bola 9">🟡 Bola 9</option>
+                        <option value="Libre/Carambola">⚪ Libre/Carambola</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Jugador 1 (Local)</label>
+                    <input type="text" id="edit-j1-nombre" required class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Puntos J1</label>
+                        <input type="number" id="edit-j1-puntos" min="0" required class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Máx Tacada J1</label>
+                        <input type="number" id="edit-j1-maxtacada" min="0" required class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Jugador 2 (Visitante)</label>
+                    <input type="text" id="edit-j2-nombre" required class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Puntos J2</label>
+                        <input type="number" id="edit-j2-puntos" min="0" required class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Máx Tacada J2</label>
+                        <input type="number" id="edit-j2-maxtacada" min="0" required class="w-full bg-slate-850 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 px-6 py-4 -mx-6 -mb-6 mt-6 flex justify-end space-x-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalEditar()" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-2 px-5 rounded-xl text-sm transition-colors shadow-md">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICACIÓN FLOTANTE (Toast) -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-2.5 transform translate-y-24 opacity-0 transition-all duration-350 pointer-events-none z-50">
+        <span id="toast-icon">💡</span>
+        <span id="toast-text" class="text-xs font-semibold">Mensaje de notificación.</span>
+    </div>
+
+    <!-- SCRIPT DE LÓGICA DE LA APLICACIÓN -->
+    <script>
+        // --- BASE DE DATOS LOCAL Y PERSISTENCIA (Simulado en LocalStorage para garantizar compatibilidad nativa) ---
+        const CLAVE_PARTIDAS = 'poolscore_pro_partidas';
+
+        function obtenerPartidas() {
+            try {
+                const partidas = localStorage.getItem(CLAVE_PARTIDAS);
+                return partidas ? JSON.parse(partidas) : [];
+            } catch (e) {
+                console.error('Error al acceder a localStorage', e);
+                return [];
+            }
+        }
+
+        function guardarPartidas(partidas) {
+            try {
+                localStorage.setItem(CLAVE_PARTIDAS, JSON.stringify(partidas));
+            } catch (e) {
+                console.error('Error al guardar en localStorage', e);
+                showToast('❌ Error al guardar datos de forma persistente', '🔴');
+            }
+        }
+
+        // --- ESTADOS DE LA PARTIDA EN CURSO ---
+        let partidaActiva = false;
+        let partidaActual = {
+            id: null,
+            modalidad: '',
+            j1: { nombre: '', puntos: 0, tacadaActual: 0, maxTacada: 0 },
+            j2: { nombre: '', puntos: 0, tacadaActual: 0, maxTacada: 0 },
+            turno: 1, // 1 para Jugador 1, 2 para Jugador 2
+            limite: null,
+            segundos: 0,
+            log: [],
+            fecha: ''
+        };
+        let intervaloCronometro = null;
+        let numeroEntradaActual = 1;
+
+        // --- INICIALIZACIÓN ---
+        window.addEventListener('load', () => {
+            // Cargar datos por defecto si hay
+            renderizarHistorial();
+            renderizarEstadisticas();
+        });
+
+        // --- NAVEGACIÓN ENTRE VISTAS ---
+        function cambiarVistaActiva(idVista) {
+            const vistas = ['vista-lobby', 'vista-marcador', 'vista-historial', 'vista-estadisticas'];
+            vistas.forEach(v => {
+                const elemento = document.getElementById(v);
+                if (v === idVista) {
+                    elemento.classList.remove('hidden');
+                } else {
+                    elemento.classList.add('hidden');
+                }
+            });
+
+            // Actualizar clases de botones de navegación
+            const botones = {
+                'vista-lobby': 'btn-nav-lobby',
+                'vista-marcador': 'btn-nav-lobby', // Mantiene encendido el lobby/juego
+                'vista-historial': 'btn-nav-historial',
+                'vista-estadisticas': 'btn-nav-stats'
+            };
+
+            const idActivo = botones[idVista];
+            ['btn-nav-lobby', 'btn-nav-historial', 'btn-nav-stats'].forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btnId === idActivo) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800";
+                }
+            });
+        }
+
+        function navegarALobby() {
+            if (partidaActiva) {
+                cambiarVistaActiva('vista-marcador');
+            } else {
+                cambiarVistaActiva('vista-lobby');
+            }
+        }
+
+        function navegarAHistorial() {
+            renderizarHistorial();
+            cambiarVistaActiva('vista-historial');
+        }
+
+        function navegarAEstadisticas() {
+            renderizarEstadisticas();
+            cambiarVistaActiva('vista-estadisticas');
+        }
+
+        // --- SISTEMA DE TOASTS / NOTIFICACIONES ---
+        function showToast(mensaje, icono = 'ℹ️') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-icon').textContent = icono;
+            document.getElementById('toast-text').textContent = mensaje;
+            
+            toast.className = "fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-2.5 transform translate-y-0 opacity-100 transition-all duration-350 z-50";
+            
+            setTimeout(() => {
+                toast.className = "fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-2.5 transform translate-y-24 opacity-0 transition-all duration-350 pointer-events-none z-50";
+            }, 3000);
+        }
+
+        // --- CONTROL DEL CRONÓMETRO ---
+        function iniciarCronometro() {
+            clearInterval(intervaloCronometro);
+            partidaActual.segundos = 0;
+            const cronoElem = document.getElementById('cronometro');
+            
+            intervaloCronometro = setInterval(() => {
+                partidaActual.segundos++;
+                const min = Math.floor(partidaActual.segundos / 60).toString().padStart(2, '0');
+                const seg = (partidaActual.segundos % 60).toString().padStart(2, '0');
+                cronoElem.textContent = `${min}:${seg}`;
+            }, 1000);
+        }
+
+        function pausarCronometro() {
+            clearInterval(intervaloCronometro);
+        }
+
+        function formatearTiempo(segundosTotales) {
+            const min = Math.floor(segundosTotales / 60).toString().padStart(2, '0');
+            const seg = (segundosTotales % 60).toString().padStart(2, '0');
+            return `${min}:${seg}`;
+        }
+
+        // --- LÓGICA DE PARTIDA ---
+        function iniciarPartida(event) {
+            event.preventDefault();
+
+            const modalidad = document.querySelector('input[name="modalidad"]:checked').value;
+            const j1Nombre = document.getElementById('j1-nombre').value.trim();
+            const j2Nombre = document.getElementById('j2-nombre').value.trim();
+            const limiteVal = parseInt(document.getElementById('puntos-limite').value);
+
+            partidaActual = {
+                id: 'partida_' + Date.now(),
+                modalidad: modalidad,
+                j1: { nombre: j1Nombre, puntos: 0, tacadaActual: 0, maxTacada: 0 },
+                j2: { nombre: j2Nombre, puntos: 0, tacadaActual: 0, maxTacada: 0 },
+                turno: 1, // Empieza J1
+                limite: isNaN(limiteVal) ? null : limiteVal,
+                segundos: 0,
+                log: [],
+                fecha: new Date().toLocaleString('es-ES')
+            };
+
+            numeroEntradaActual = 1;
+            partidaActiva = true;
+
+            // Actualizar Marcador Visual
+            document.getElementById('m-j1-nombre').textContent = j1Nombre;
+            document.getElementById('m-j2-nombre').textContent = j2Nombre;
+            document.getElementById('m-j1-puntos').textContent = '0';
+            document.getElementById('m-j2-puntos').textContent = '0';
+            document.getElementById('m-j1-tacada').textContent = '0';
+            document.getElementById('m-j2-tacada').textContent = '0';
+            document.getElementById('m-j1-max-tacada').textContent = '0';
+            document.getElementById('m-j2-max-tacada').textContent = '0';
+            document.getElementById('num-entrada').textContent = '1';
+            document.getElementById('marcador-modalidad').textContent = `🎱 ${modalidad}`;
+            document.getElementById('marcador-limite').textContent = partidaActual.limite ? `Límite: ${partidaActual.limite}` : 'Límite: -';
+
+            // Limpiar log
+            const logContainer = document.getElementById('log-partida');
+            logContainer.innerHTML = `<div class="text-slate-400 font-semibold text-xs border-b border-slate-800 pb-1 flex justify-between">
+                <span>Jugada</span>
+                <span>Puntos</span>
+            </div>`;
+            agregarEntradaLog("Partida iniciada de " + modalidad, "-");
+
+            // Configurar estilos de turno inicial
+            actualizarEstilosTurno();
+
+            // Navegar y Cronometrar
+            cambiarVistaActiva('vista-marcador');
+            iniciarCronometro();
+            showToast('Partida iniciada. ¡Suerte a ambos!', '🎳');
+        }
+
+        function actualizarEstilosTurno() {
+            const cardJ1 = document.getElementById('card-j1');
+            const cardJ2 = document.getElementById('card-j2');
+            const turnoJ1 = document.getElementById('turno-j1');
+            const turnoJ2 = document.getElementById('turno-j2');
+
+            if (partidaActual.turno === 1) {
+                cardJ1.className = "relative bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 md:p-8 flex flex-col justify-between transition-all shadow-xl shadow-emerald-500/5";
+                cardJ2.className = "relative bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 flex flex-col justify-between transition-all opacity-60";
+                turnoJ1.classList.remove('hidden');
+                turnoJ2.classList.add('hidden');
+            } else {
+                cardJ1.className = "relative bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 flex flex-col justify-between transition-all opacity-60";
+                cardJ2.className = "relative bg-slate-900 border-2 border-emerald-500 rounded-3xl p-6 md:p-8 flex flex-col justify-between transition-all shadow-xl shadow-emerald-500/5";
+                turnoJ1.classList.add('hidden');
+                turnoJ2.classList.remove('hidden');
+            }
+        }
+
+        function agregarEntradaLog(accion, detalle) {
+            const logContainer = document.getElementById('log-partida');
+            const div = document.createElement('div');
+            div.className = "flex justify-between items-center py-1 border-b border-slate-850 text-slate-300";
+            div.innerHTML = `
+                <span>${accion}</span>
+                <span class="text-emerald-400 font-bold">${detalle}</span>
+            `;
+            logContainer.prepend(div);
+            // Guardar en array de log de la partida
+            partidaActual.log.push({ accion, detalle });
+        }
+
+        function modificarPuntos(jugador, cantidad) {
+            const j = jugador === 1 ? partidaActual.j1 : partidaActual.j2;
+            const opuesto = jugador === 1 ? partidaActual.j2 : partidaActual.j1;
+            
+            // Si no es el turno del jugador y suma puntos, forzamos cambio de turno automático
+            if (partidaActual.turno !== jugador && cantidad > 0) {
+                cambiarTurno(jugador);
+            }
+
+            const antiguosPuntos = j.puntos;
+            j.puntos = Math.max(0, j.puntos + cantidad);
+
+            // Tacada actual (Puntos seguidos en este turno)
+            if (cantidad > 0) {
+                j.tacadaActual += cantidad;
+                if (j.tacadaActual > j.maxTacada) {
+                    j.maxTacada = j.tacadaActual;
+                }
+            } else if (cantidad < 0) {
+                j.tacadaActual = Math.max(0, j.tacadaActual + cantidad);
+            }
+
+            // Actualizar interfaz
+            document.getElementById(`m-j${jugador}-puntos`).textContent = j.puntos;
+            document.getElementById(`m-j${jugador}-tacada`).textContent = j.tacadaActual;
+            document.getElementById(`m-j${jugador}-max-tacada`).textContent = j.maxTacada;
+
+            // Guardar log si hay variación real
+            if (j.puntos !== antiguosPuntos) {
+                const signo = cantidad > 0 ? '+' : '';
+                agregarEntradaLog(`${j.nombre} modifica puntos: ${signo}${cantidad}`, `${j.puntos} pts`);
+            }
+
+            // Verificar si alcanza el límite de puntuación
+            if (partidaActual.limite && j.puntos >= partidaActual.limite) {
+                finalizarPartidaAutomatica(j.nombre);
+            }
+        }
+
+        function cambiarTurno(siguienteJugador) {
+            if (partidaActual.turno === siguienteJugador) return;
+
+            const jugadorSaliente = partidaActual.turno === 1 ? partidaActual.j1 : partidaActual.j2;
+            
+            // Cerrar entrada del anterior jugador
+            if (jugadorSaliente.tacadaActual > 0) {
+                agregarEntradaLog(`Entrada fin. ${jugadorSaliente.nombre} hizo tacada de`, `${jugadorSaliente.tacadaActual} carambolas`);
+            }
+            
+            // Reiniciar tacada del saliente
+            jugadorSaliente.tacadaActual = 0;
+            document.getElementById(`m-j${partidaActual.turno}-tacada`).textContent = '0';
+
+            // Incrementar número de entrada global cuando vuelva al jugador 1
+            if (siguienteJugador === 1) {
+                numeroEntradaActual++;
+                document.getElementById('num-entrada').textContent = numeroEntradaActual;
+                agregarEntradaLog(`Inicia Entrada #${numeroEntradaActual}`, "⚡");
+            }
+
+            // Cambiar turno real
+            partidaActual.turno = siguienteJugador;
+            actualizarEstilosTurno();
+
+            const nuevoJugador = siguienteJugador === 1 ? partidaActual.j1 : partidaActual.j2;
+            agregarEntradaLog(`Turno para: ${nuevoJugador.nombre}`, "🎯");
+        }
+
+        // --- FINALIZAR Y GUARDAR PARTIDA ---
+        function finalizarPartidaAutomatica(nombreGanador) {
+            pausarCronometro();
+            showToast(`¡Partida terminada! Ganador: ${nombreGanador}`, '🏆');
+            guardarYSalirPartida();
+        }
+
+        function finalizarPartidaManual() {
+            pausarCronometro();
+            guardarYSalirPartida();
+        }
+
+        function guardarYSalirPartida() {
+            // Determinar ganador
+            let ganador = 'Empate';
+            if (partidaActual.j1.puntos > partidaActual.j2.puntos) {
+                ganador = partidaActual.j1.nombre;
+            } else if (partidaActual.j2.puntos > partidaActual.j1.puntos) {
+                ganador = partidaActual.j2.nombre;
+            }
+
+            const partidaAGuardar = {
+                ...partidaActual,
+                ganador: ganador,
+                entradasTotales: numeroEntradaActual,
+                duracionFormateada: formatearTiempo(partidaActual.segundos)
+            };
+
+            // Guardar de forma persistente
+            const listado = obtenerPartidas();
+            listado.unshift(partidaAGuardar); // Añadir al principio
+            guardarPartidas(listado);
+
+            partidaActiva = false;
+            
+            // Mostrar modal de detalle/resumen al finalizar
+            mostrarDetallesDirecto(partidaAGuardar);
+
+            // Volver a lobby
+            document.getElementById('form-nueva-partida').reset();
+            cambiarVistaActiva('vista-lobby');
+            showToast('Partida guardada correctamente en el historial.', '💾');
+        }
+
+        // --- SALIDAS E INTERRUPCIÓN DE PARTIDAS ---
+        function confirmarAbandono() {
+            document.getElementById('modal-confirmar-abandono').classList.remove('hidden');
+        }
+
+        function cerrarAbandono() {
+            document.getElementById('modal-confirmar-abandono').classList.add('hidden');
+        }
+
+        function salirPartidaDefinitivamente() {
+            pausarCronometro();
+            partidaActiva = false;
+            cerrarAbandono();
+            document.getElementById('form-nueva-partida').reset();
+            cambiarVistaActiva('vista-lobby');
+            showToast('Partida descartada.', '🗑️');
+        }
+
+        // --- GESTIÓN DE HISTORIAL Y CONSULTAS ---
+        function renderizarHistorial() {
+            const contenedor = document.getElementById('contenedor-historial');
+            const listado = obtenerPartidas();
+
+            if (listado.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-500">
+                        <span class="text-4xl">📁</span>
+                        <p class="mt-2 text-sm">No hay partidas guardadas.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            contenedor.innerHTML = '';
+            listado.forEach(p => {
+                const esGanadorJ1 = p.ganador === p.j1.nombre;
+                const esGanadorJ2 = p.ganador === p.j2.nombre;
+
+                const cardHtml = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all flex flex-col justify-between space-y-4 shadow-lg">
+                        <!-- Cabecera de tarjeta -->
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-slate-800 text-slate-300 text-xs font-semibold px-2 py-1 rounded-md">${p.modalidad}</span>
+                                <p class="text-[11px] text-slate-500 mt-1">${p.fecha}</p>
+                            </div>
+                            <!-- Botón de detalles -->
+                            <div class="flex space-x-1.5">
+                                <button onclick="editarPartida('${p.id}')" title="Editar partida" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-colors">
+                                    ✏️
+                                </button>
+                                <button onclick="eliminarPartida('${p.id}')" title="Eliminar partida" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-xs transition-colors border border-rose-500/10">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Panel de puntuación -->
+                        <div class="grid grid-cols-3 items-center bg-slate-950/60 p-3 rounded-xl text-sm border border-slate-900">
+                            <div class="text-left min-w-0">
+                                <p class="font-bold text-white truncate ${esGanadorJ1 ? 'text-emerald-400 font-extrabold' : ''}">${p.j1.nombre}</p>
+                                <p class="text-[10px] text-slate-500">J1 Local</p>
+                            </div>
+                            <div class="text-center">
+                                <span class="text-lg font-black text-white">${p.j1.puntos}</span>
+                                <span class="text-slate-600 px-1">-</span>
+                                <span class="text-lg font-black text-white">${p.j2.puntos}</span>
+                            </div>
+                            <div class="text-right min-w-0">
+                                <p class="font-bold text-white truncate ${esGanadorJ2 ? 'text-emerald-400 font-extrabold' : ''}">${p.j2.nombre}</p>
+                                <p class="text-[10px] text-slate-500">J2 Visitante</p>
+                            </div>
+                        </div>
+
+                        <!-- Footer de la tarjeta -->
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-850 text-xs">
+                            <div class="text-slate-400">
+                                ⏱️ Duración: <span class="text-white font-semibold font-mono">${p.duracionFormateada || '00:00'}</span>
+                            </div>
+                            <button onclick="verDetallePartida('${p.id}')" class="text-emerald-400 font-bold hover:underline text-xs flex items-center space-x-1">
+                                <span>Ver detalles</span>
+                                <span>👁️</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                contenedor.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        function filtrarPartidas() {
+            const query = document.getElementById('busqueda-jugador').value.toLowerCase().trim();
+            const listado = obtenerPartidas();
+            const contenedor = document.getElementById('contenedor-historial');
+
+            if (!query) {
+                renderizarHistorial();
+                return;
+            }
+
+            const filtradas = listado.filter(p => 
+                p.j1.nombre.toLowerCase().includes(query) || 
+                p.j2.nombre.toLowerCase().includes(query) ||
+                p.modalidad.toLowerCase().includes(query)
+            );
+
+            if (filtradas.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-500">
+                        <span class="text-4xl">🔍</span>
+                        <p class="mt-2 text-sm">No se encontraron partidas para "${query}"</p>
+                    </div>
+                `;
+                return;
+            }
+
+            contenedor.innerHTML = '';
+            filtradas.forEach(p => {
+                const esGanadorJ1 = p.ganador === p.j1.nombre;
+                const esGanadorJ2 = p.ganador === p.j2.nombre;
+
+                const cardHtml = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all flex flex-col justify-between space-y-4 shadow-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-slate-800 text-slate-300 text-xs font-semibold px-2 py-1 rounded-md">${p.modalidad}</span>
+                                <p class="text-[11px] text-slate-500 mt-1">${p.fecha}</p>
+                            </div>
+                            <div class="flex space-x-1.5">
+                                <button onclick="editarPartida('${p.id}')" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
+                                    ✏️
+                                </button>
+                                <button onclick="eliminarPartida('${p.id}')" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-xs border border-rose-500/10">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 items-center bg-slate-950/60 p-3 rounded-xl text-sm border border-slate-900">
+                            <div class="text-left min-w-0">
+                                <p class="font-bold text-white truncate ${esGanadorJ1 ? 'text-emerald-400 font-extrabold' : ''}">${p.j1.nombre}</p>
+                            </div>
+                            <div class="text-center">
+                                <span class="text-lg font-black text-white">${p.j1.puntos}</span>
+                                <span class="text-slate-600 px-1">-</span>
+                                <span class="text-lg font-black text-white">${p.j2.puntos}</span>
+                            </div>
+                            <div class="text-right min-w-0">
+                                <p class="font-bold text-white truncate ${esGanadorJ2 ? 'text-emerald-400 font-extrabold' : ''}">${p.j2.nombre}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-850 text-xs">
+                            <div class="text-slate-400">
+                                ⏱️ Duración: <span class="text-white font-semibold font-mono">${p.duracionFormateada || '00:00'}</span>
+                            </div>
+                            <button onclick="verDetallePartida('${p.id}')" class="text-emerald-400 font-bold hover:underline text-xs flex items-center space-x-1">
+                                <span>Ver detalles</span>
+                                <span>👁️</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                contenedor.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        // --- ELIMINAR Y EDITAR PARTIDAS ---
+        function eliminarPartida(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar permanentemente esta partida del historial?")) {
+                let listado = obtenerPartidas();
+                listado = listado.filter(p => p.id !== id);
+                guardarPartidas(listado);
+                renderizarHistorial();
+                showToast("Partida eliminada correctamente.", "🗑️");
+            }
+        }
+
+        function editarPartida(id) {
+            const listado = obtenerPartidas();
+            const partida = listado.find(p => p.id === id);
+            if (!partida) return;
+
+            // Rellenar formulario de edición
+            document.getElementById('edit-id').value = partida.id;
+            document.getElementById('edit-modalidad').value = partida.modalidad;
+            document.getElementById('edit-j1-nombre').value = partida.j1.nombre;
+            document.getElementById('edit-j1-puntos').value = partida.j1.puntos;
+            document.getElementById('edit-j1-maxtacada').value = partida.j1.maxTacada;
+            document.getElementById('edit-j2-nombre').value = partida.j2.nombre;
+            document.getElementById('edit-j2-puntos').value = partida.j2.puntos;
+            document.getElementById('edit-j2-maxtacada').value = partida.j2.maxTacada;
+
+            document.getElementById('modal-editar-partida').classList.remove('hidden');
+        }
+
+        function cerrarModalEditar() {
+            document.getElementById('modal-editar-partida').classList.add('hidden');
+        }
+
+        function guardarEdicionPartida(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('edit-id').value;
+            const listado = obtenerPartidas();
+            const idx = listado.findIndex(p => p.id === id);
+
+            if (idx === -1) return;
+
+            const modJ1Nombre = document.getElementById('edit-j1-nombre').value.trim();
+            const modJ1Puntos = parseInt(document.getElementById('edit-j1-puntos').value);
+            const modJ1MaxTacada = parseInt(document.getElementById('edit-j1-maxtacada').value);
+
+            const modJ2Nombre = document.getElementById('edit-j2-nombre').value.trim();
+            const modJ2Puntos = parseInt(document.getElementById('edit-j2-puntos').value);
+            const modJ2MaxTacada = parseInt(document.getElementById('edit-j2-maxtacada').value);
+
+            const modModalidad = document.getElementById('edit-modalidad').value;
+
+            // Determinar nuevo ganador
+            let ganador = 'Empate';
+            if (modJ1Puntos > modJ2Puntos) {
+                ganador = modJ1Nombre;
+            } else if (modJ2Puntos > modJ1Puntos) {
+                ganador = modJ2Nombre;
+            }
+
+            // Actualizar objeto
+            listado[idx].modalidad = modModalidad;
+            listado[idx].j1.nombre = modJ1Nombre;
+            listado[idx].j1.puntos = modJ1Puntos;
+            listado[idx].j1.maxTacada = modJ1MaxTacada;
+            listado[idx].j2.nombre = modJ2Nombre;
+            listado[idx].j2.puntos = modJ2Puntos;
+            listado[idx].j2.maxTacada = modJ2MaxTacada;
+            listado[idx].ganador = ganador;
+
+            guardarPartidas(listado);
+            cerrarModalEditar();
+            renderizarHistorial();
+            showToast("Partida editada correctamente.", "✏️");
+        }
+
+        // --- VER DETALLES EN MODAL ---
+        function verDetallePartida(id) {
+            const listado = obtenerPartidas();
+            const partida = listado.find(p => p.id === id);
+            if (!partida) return;
+
+            mostrarDetallesDirecto(partida);
+        }
+
+        function mostrarDetallesDirecto(partida) {
+            // Rellenar modal
+            document.getElementById('md-modalidad').textContent = partida.modalidad;
+            document.getElementById('md-fecha').textContent = partida.fecha;
+            
+            document.getElementById('md-j1-nombre').textContent = partida.j1.nombre;
+            document.getElementById('md-j1-puntos').textContent = partida.j1.puntos;
+            
+            document.getElementById('md-j2-nombre').textContent = partida.j2.nombre;
+            document.getElementById('md-j2-puntos').textContent = partida.j2.puntos;
+
+            // Resaltar ganadores
+            const mGanador1 = document.getElementById('md-j1-ganador');
+            const mGanador2 = document.getElementById('md-j2-ganador');
+            
+            mGanador1.classList.add('hidden');
+            mGanador2.classList.add('hidden');
+
+            if (partida.ganador === partida.j1.nombre && partida.j1.puntos !== partida.j2.puntos) {
+                mGanador1.classList.remove('hidden');
+            } else if (partida.ganador === partida.j2.nombre && partida.j1.puntos !== partida.j2.puntos) {
+                mGanador2.classList.remove('hidden');
+            }
+
+            document.getElementById('md-duracion').textContent = partida.duracionFormateada || "00:00";
+            
+            const maxT = Math.max(partida.j1.maxTacada || 0, partida.j2.maxTacada || 0);
+            document.getElementById('md-mejor-tacada').textContent = `${maxT} carambolas`;
+
+            // Cargar log de jugadas simplificado
+            const logsElem = document.getElementById('md-log-entradas');
+            logsElem.innerHTML = '';
+            
+            if (partida.log && partida.log.length > 0) {
+                // Invertir orden para que se lea cronológicamente descendente
+                const renderLogs = [...partida.log].slice(0, 30); // Limitar a las últimas 30 acciones en detalles
+                renderLogs.forEach(lg => {
+                    const lDiv = document.createElement('div');
+                    lDiv.className = "flex justify-between py-0.5 border-b border-slate-900/40";
+                    lDiv.innerHTML = `<span>${lg.accion}</span> <span class="text-emerald-400 font-bold">${lg.detalle}</span>`;
+                    logsElem.appendChild(lDiv);
+                });
+            } else {
+                logsElem.innerHTML = '<div class="text-slate-500 italic">No hay registros de entradas guardados para esta partida.</div>';
+            }
+
+            document.getElementById('modal-detalle-partida').classList.remove('hidden');
+        }
+
+        function cerrarModalDetalle() {
+            document.getElementById('modal-detalle-partida').classList.add('hidden');
+        }
+
+        // --- SISTEMA DE ESTADÍSTICAS GLOBAL ---
+        function renderizarEstadisticas() {
+            const listado = obtenerPartidas();
+            
+            // KPIs
+            document.getElementById('stat-total-partidas').textContent = listado.length;
+
+            const jugadoresMap = {};
+            let recordTacadaGlobal = 0;
+
+            listado.forEach(p => {
+                // Registrar o actualizar Jugador 1
+                if (!jugadoresMap[p.j1.nombre]) {
+                    jugadoresMap[p.j1.nombre] = { ganadas: 0, jugadas: 0, maxTacada: 0 };
+                }
+                jugadoresMap[p.j1.nombre].jugadas++;
+                if (p.j1.maxTacada > jugadoresMap[p.j1.nombre].maxTacada) {
+                    jugadoresMap[p.j1.nombre].maxTacada = p.j1.maxTacada;
+                }
+                if (p.j1.maxTacada > recordTacadaGlobal) {
+                    recordTacadaGlobal = p.j1.maxTacada;
+                }
+
+                // Registrar o actualizar Jugador 2
+                if (!jugadoresMap[p.j2.nombre]) {
+                    jugadoresMap[p.j2.nombre] = { ganadas: 0, jugadas: 0, maxTacada: 0 };
+                }
+                jugadoresMap[p.j2.nombre].jugadas++;
+                if (p.j2.maxTacada > jugadoresMap[p.j2.nombre].maxTacada) {
+                    jugadoresMap[p.j2.nombre].maxTacada = p.j2.maxTacada;
+                }
+                if (p.j2.maxTacada > recordTacadaGlobal) {
+                    recordTacadaGlobal = p.j2.maxTacada;
+                }
+
+                // Contar victoria
+                if (p.ganador !== 'Empate') {
+                    if (jugadoresMap[p.ganador]) {
+                        jugadoresMap[p.ganador].ganadas++;
+                    }
+                }
+            });
+
+            // Actualizar KPIs adicionales
+            const nombresJugadores = Object.keys(jugadoresMap);
+            document.getElementById('stat-total-jugadores').textContent = nombresJugadores.length;
+            document.getElementById('stat-record-tacada').textContent = recordTacadaGlobal;
+
+            // Encontrar líder de victorias
+            let lider = 'Ninguno';
+            let maxVic = 0;
+            nombresJugadores.forEach(nombre => {
+                if (jugadoresMap[nombre].ganadas > maxVic) {
+                    maxVic = jugadoresMap[nombre].ganadas;
+                    lider = `${nombre} (${maxVic})`;
+                }
+            });
+            document.getElementById('stat-lider-victorias').textContent = lider;
+
+            // Renderizar la tabla de clasificación
+            const tbody = document.getElementById('tabla-estadisticas');
+            if (nombresJugadores.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="p-8 text-center text-slate-500">No hay datos suficientes para mostrar estadísticas.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Ordenar por porcentaje de victorias, luego por ganadas
+            const clasificacion = nombresJugadores.map(nombre => {
+                const jData = jugadoresMap[nombre];
+                const pct = jData.jugadas > 0 ? ((jData.ganadas / jData.jugadas) * 100).toFixed(1) : 0;
+                return {
+                    nombre,
+                    ...jData,
+                    porcentaje: parseFloat(pct)
+                };
+            }).sort((a, b) => b.porcentaje - a.porcentaje || b.ganadas - a.ganadas);
+
+            tbody.innerHTML = '';
+            clasificacion.forEach((jug, idx) => {
+                const medalla = idx === 0 ? '👑 ' : idx === 1 ? '🥈 ' : idx === 2 ? '🥉 ' : '';
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-800 hover:bg-slate-850/40 transition-colors">
+                        <td class="p-4 font-bold text-white flex items-center">
+                            <span class="text-xs text-slate-500 mr-2">#${idx + 1}</span>
+                            <span>${medalla}${jug.nombre}</span>
+                        </td>
+                        <td class="p-4 text-center font-semibold text-slate-300">${jug.jugadas}</td>
+                        <td class="p-4 text-center text-emerald-400 font-bold">${jug.ganadas}</td>
+                        <td class="p-4 text-center text-slate-400">${jug.jugadas - jug.ganadas}</td>
+                        <td class="p-4 text-center text-white font-extrabold">${jug.porcentaje}%</td>
+                        <td class="p-4 text-center text-emerald-300 font-mono font-bold">${jug.maxTacada}</td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
